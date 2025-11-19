@@ -1,0 +1,219 @@
+{
+	"info": {
+		"_postman_id": "af961331-ded1-4621-a129-bb07ccb09096",
+		"name": "MGH Blockchain API",
+		"description": "A decentralized blockchain with mining capabilities",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39098349"
+	},
+	"item": [
+		{
+			"name": "Root",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						""
+					]
+				},
+				"description": "Root endpoint with basic information about the API"
+			},
+			"response": []
+		},
+		{
+			"name": "Add Transaction",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"transaction\": \"Alice sends 10 coins to Bob\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/transactions",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"transactions"
+					]
+				},
+				"description": "Add a transaction to the pending pool"
+			},
+			"response": []
+		},
+		{
+			"name": "Mine Block",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"miner_address\": \"miner_123456\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/mine",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"mine"
+					]
+				},
+				"description": "Mine a new block - any miner can call this"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Mining Info",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/mining/info",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"mining",
+						"info"
+					]
+				},
+				"description": "Get current mining information"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/status",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"status"
+					]
+				},
+				"description": "Get blockchain status"
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Blocks",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/blocks",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"blocks"
+					]
+				},
+				"description": "Get all blocks in the blockchain"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Block by Index",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/blocks/0",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"blocks",
+						"0"
+					]
+				},
+				"description": "Get a specific block by index"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Pending Transactions",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/transactions/pending",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"transactions",
+						"pending"
+					]
+				},
+				"description": "Get all pending transactions"
+			},
+			"response": []
+		},
+		{
+			"name": "Validate Chain",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/validate",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"validate"
+					]
+				},
+				"description": "Validate the entire blockchain"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Stats",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/stats",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"stats"
+					]
+				},
+				"description": "Get detailed blockchain statistics"
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}
