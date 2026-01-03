@@ -66,11 +66,34 @@ The API will be available at `https://fastapi-blockchain.m-gh.com`
 
 ### Usage Examples
 
-#### 1. Add a Transaction
+#### 1. Create a Wallet
+```bash
+curl "https://fastapi-blockchain.m-gh.com/wallets/new"
+```
+Response:
+```json
+{
+  "address": "...",
+  "private_key": "...",
+  "instruction": "..."
+}
+```
+
+#### 2. Get Balance
+```bash
+curl "https://fastapi-blockchain.m-gh.com/wallets/<address>/balance"
+```
+
+#### 3. Add a Transaction
 ```bash
 curl -X POST "https://fastapi-blockchain.m-gh.com/transactions" \
      -H "Content-Type: application/json" \
-     -d '{"transaction": "Alice sends 10 MGH to Bob"}'
+     -d '{
+           "sender": "<sender_address>",
+           "recipient": "<recipient_address>",
+           "amount": 10.5,
+           "signature": "<digital_signature>"
+         }'
 ```
 
 #### 2. Mine a Block
@@ -187,9 +210,11 @@ The first block is automatically created with:
 
 ## Future Enhancements
 
+- ✅ Wallet management (Public/Private key pairs)
+- ✅ Balance tracking per wallet
+- ✅ Digital signatures for transactions
 - [ ] Dynamic difficulty adjustment
 - [ ] Transaction fees
-- [ ] Wallet management
 - [ ] Network consensus
 - [ ] Block size limits
 - [ ] Mining pools

@@ -1,5 +1,6 @@
 import time
 import hashlib
+import json
 
 
 class MGHBlockchain:
@@ -13,8 +14,10 @@ class MGHBlockchain:
         self.miner_address = miner_address
         self.timestamp = time.time()
 
+        # Convert transactions to a consistent string format for hashing
+        transactions_string = json.dumps(transaction_list, sort_keys=True)
         self.block_data = (
-            " | ".join(transaction_list)
+            transactions_string
             + " | "
             + previous_block_hash
             + " | "
@@ -39,13 +42,69 @@ class BlockchainManager:
 
     def create_genesis_block(self):
         """Create the first block in the blockchain"""
+        genesis_transaction = {
+            "sender": "0",
+            "recipient": "Genesis",
+            "amount": 0,
+            "timestamp": time.time(),
+            "message": "Genesis Transaction"
+        }
         genesis_block = MGHBlockchain(
-            "Genesis Block", ["Genesis Transaction"], 0, "Genesis"
+            "Genesis Block", [genesis_transaction], 0, "Genesis"
         )
         self.chain.append(genesis_block)
 
-    def add_transaction(self, transaction: str) -> dict:
-        """Add transaction to pending pool"""
+    def get_balance(self, address: str) -> float:
+        """Calculate the balance of a given address"""
+        balance = 0.0
+        # Check all blocks in the chain
+        for block in self.chain:
+            for tx in block.transaction_list:
+                if tx.get("sender") == address:
+                    balance -= tx.get("amount", 0)
+                if tx.get("recipient") == address:
+                    balance += tx.get("amount", 0)
+
+        # Subtract pending outgoing transactions
+        for tx in self.pending_transactions:
+            if tx.get("sender") == address:
+                balance -= tx.get("amount", 0)
+
+        return balance
+
+    def add_transaction(self, sender: str, recipient: str, amount: float, signature: str = None) -> dict:
+        """Add a structured transaction to pending pool"""
+        from wallet import Wallet
+
+        # Basic validation
+        if amount <= 0:
+            return {"status": "error", "message": "Amount must be positive"}
+
+        # Check balance (except for mining rewards from "0")
+        if sender != "0":
+            current_balance = self.get_balance(sender)
+            if current_balance < amount:
+                return {
+                    "status": "error",
+                    "message": f"Insufficient balance. Current: {current_balance}, Requested: {amount}",
+                }
+
+            # Verify signature
+            if not signature:
+                return {"status": "error", "message": "Transaction signature is required"}
+
+            transaction_data = f"{sender}{recipient}{amount}"
+            if not Wallet.verify_signature(sender, signature, transaction_data):
+                return {"status": "error", "message": "Invalid transaction signature"}
+
+        transaction = {
+            "sender": sender,
+            "recipient": recipient,
+            "amount": amount,
+            "timestamp": time.time(),
+            "signature": signature
+        }
+
         if len(self.pending_transactions) >= self.MAX_TRANSACTIONS_PER_BLOCK:
             return {
                 "status": "error",
@@ -71,7 +130,7 @@ class BlockchainManager:
 
         # Start mining with nonce
         nonce = 0
-        max_attempts = 100000  # Prevent infinite loops
+        max_attempts = 1000000  # Increased for higher difficulty
 
         while nonce < max_attempts:
             # Create block with current nonce
@@ -84,13 +143,17 @@ class BlockchainManager:
                 # Success! Add block to chain
                 self.chain.append(block)
 
-                # Add mining reward transaction
-                reward_transaction = (
-                    f"MINING_REWARD: {self.mining_reward} MGH to {miner_address}"
-                )
-                self.pending_transactions = [
-                    reward_transaction
-                ]  # Start new block with reward
+                # Prepare mining reward for the NEXT block's pending transactions
+                reward_transaction = {
+                    "sender": "0",
+                    "recipient": miner_address,
+                    "amount": self.mining_reward,
+                    "timestamp": time.time(),
+                    "message": "Mining Reward"
+                }
+                
+                # Clear pending transactions and add reward
+                self.pending_transactions = [reward_transaction]
 
                 return {
                     "status": "success",
@@ -137,8 +200,9 @@ class BlockchainManager:
                 return {"status": "error", "message": f"Invalid chain at block {i}"}
 
             # Recalculate hash to ensure integrity
+            transactions_string = json.dumps(current_block.transaction_list, sort_keys=True)
             block_data = (
-                " | ".join(current_block.transaction_list)
+                transactions_string
                 + " | "
                 + current_block.previous_block_hash
                 + " | "

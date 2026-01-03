@@ -1,7 +1,9 @@
+from typing import Optional
 from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException
 
 from blockchain import BlockchainManager
+from wallet import Wallet
 
 
 app = FastAPI(
@@ -14,7 +16,10 @@ blockchain = BlockchainManager()
 
 
 class TransactionRequest(BaseModel):
-    transaction: str
+    sender: str
+    recipient: str
+    amount: float
+    signature: str
 
 
 class MiningRequest(BaseModel):
@@ -26,8 +31,10 @@ def read_root():
     """Root endpoint with basic information"""
     return {
         "message": "Welcome to MGH Blockchain API",
-        "version": "1.1.0",
+        "version": "1.2.0",
         "endpoints": {
+            "create_wallet": "GET /wallets/new",
+            "get_balance": "GET /wallets/{address}/balance",
             "add_transaction": "POST /transactions",
             "mine_block": "POST /mine",
             "get_status": "GET /status",
@@ -38,10 +45,37 @@ def read_root():
     }
 
 
+@app.get("/wallets/new")
+def create_wallet():
+    """Create a new wallet with public/private key pair"""
+    wallet = Wallet()
+    return {
+        "address": wallet.get_public_key(),
+        "private_key": wallet.get_private_key(),
+        "instruction": "Keep your private_key safe. You need it to sign transactions."
+    }
+
+
+@app.get("/wallets/{address}/balance")
+def get_balance(address: str):
+    """Get the balance of a specific address"""
+    balance = blockchain.get_balance(address)
+    return {
+        "address": address,
+        "balance": balance,
+        "currency": "MGH"
+    }
+
+
 @app.post("/transactions")
 def add_transaction(request: TransactionRequest):
     """Add a transaction to the pending pool"""
-    result = blockchain.add_transaction(request.transaction)
+    result = blockchain.add_transaction(
+        sender=request.sender,
+        recipient=request.recipient,
+        amount=request.amount,
+        signature=request.signature
+    )
     if result["status"] == "error":
         raise HTTPException(status_code=400, detail=result["message"])
     return result
