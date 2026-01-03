@@ -26,7 +26,7 @@ def read_root():
     """Root endpoint with basic information"""
     return {
         "message": "Welcome to MGH Blockchain API",
-        "version": "1.0.0",
+        "version": "1.1.0",
         "endpoints": {
             "add_transaction": "POST /transactions",
             "mine_block": "POST /mine",
